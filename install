@@ -1,0 +1,5 @@
+#!/bin/sh
+# Thin bootstrap: full installer is web/install (served at https://mdee.bkh.dev/install).
+set -eu
+URL="${MDEE_INSTALL_URL:-https://mdee.bkh.dev/install}"
+curl -fsSL "$URL" | bash
