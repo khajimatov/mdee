@@ -3,6 +3,10 @@
   "module": "src/index.ts",
   "type": "module",
   "private": true,
+  "scripts": {
+    "compile": "bun run scripts/compile.ts",
+    "prepare-opentui": "bun install --os=\"*\" --cpu=\"*\" @opentui/core"
+  },
   "bin": {
     "mdee": "src/index.ts"
   },
@@ -13,6 +17,6 @@
     "typescript": "^5"
   },
   "dependencies": {
-    "@opentui/core": "^0.1.99"
+    "@opentui/core": "0.1.99"
   }
 }

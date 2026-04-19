@@ -49,3 +49,9 @@ bun src/index.ts sample.md
 ```
 
 Static landing page and installer sources live under `web/`.
+
+## TODO
+
+- [ ] Fix cursor position display
+- [ ] Fix cursor moving content
+- [ ] Fix tree sitter wasm worker bun
