@@ -64,3 +64,6 @@ Static landing page and installer sources live under `web/`.
 
 - [ ] Fix cursor position display
 - [ ] Fix cursor moving content
+- [ ] Fix tree sitter wasm worker bun
+- [ ] Add usage instructions
+- [ ] Make lil announcement media content
