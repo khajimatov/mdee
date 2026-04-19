@@ -46,7 +46,8 @@ function toggle(mode: Mode): Mode {
 ```
 
 ```bash
-bun run src/index.ts sample.md
+bun src/index.ts sample.md
+# or: ./dist/mdee sample.md  (after bun run compile)
 ```
 
 ## Table

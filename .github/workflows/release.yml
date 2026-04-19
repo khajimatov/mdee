@@ -41,11 +41,12 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      # Uses scripts/compile.ts (Tree-sitter parser.worker + $bunfs define); binary is dist/mdee.
       - name: Compile binary
-        run: bun build --compile ./src/index.ts --outfile mdee
+        run: bun run compile -- --skip-install
 
       - name: Package tarball
-        run: tar czvf "mdee-${{ matrix.os }}-${{ matrix.arch }}.tar.gz" mdee
+        run: tar czvf "mdee-${{ matrix.os }}-${{ matrix.arch }}.tar.gz" -C dist mdee
 
       - uses: actions/upload-artifact@v4
         with:

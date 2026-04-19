@@ -21,6 +21,16 @@ mdee path/to/file.md
 bun src/index.ts path/to/file.md
 ```
 
+## Standalone binary
+
+```bash
+bun run compile              # writes dist/mdee (runs optional @opentui/core cross-platform install first)
+bun run compile -- --skip-install   # after a normal bun install (e.g. in CI)
+./dist/mdee path/to/file.md
+```
+
+Release tarballs (`mdee-{mac|linux}-{arch}.tar.gz`) contain the `mdee` binary from `dist/`; the GitHub Actions release workflow uses `bun run compile`.
+
 The file must already exist. The window title is set to the file’s basename.
 
 ## Keys
@@ -54,4 +64,3 @@ Static landing page and installer sources live under `web/`.
 
 - [ ] Fix cursor position display
 - [ ] Fix cursor moving content
-- [ ] Fix tree sitter wasm worker bun
