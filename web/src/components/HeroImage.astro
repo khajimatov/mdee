@@ -8,7 +8,7 @@ import mdeePng from '../assets/mdee.png';
     src={mdeePng}
     formats={['avif', 'webp', 'png']}
     widths={[640, 1280, 1920, 2560]}
-    sizes="(max-width: 640px) 100vw, (max-width: 1280px) 100vw, (max-width: 1920px) 100vw, 2560px"
+    sizes="min(calc(100vw - 2.5rem), 40rem)"
     alt="mdee running in the terminal with a markdown file open"
     class="hero-shot block h-auto w-full rounded-[10px] [&_img]:rounded-[10px]"
     loading="eager"
