@@ -1,0 +1,67 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+@layer base {
+  :root {
+    color-scheme: light dark;
+    --bg: #ffffff;
+    --surface: #ececec;
+    --border: #30363d;
+    --text: #000000;
+    --text-muted: #565e67;
+    --surface-label: #3d444c;
+    --link: #0550ae;
+    --focus: #0550ae;
+    --copied-border: #116329;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #6e7681;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --surface-label: #9da5b4;
+      --link: #79c0ff;
+      --focus: #79c0ff;
+      --copied-border: #3fb950;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  *,
+  ::after,
+  ::before {
+    box-sizing: border-box;
+  }
+
+  a {
+    color: var(--link);
+    text-decoration: none;
+  }
+
+  a:focus-visible {
+    border-radius: 2px;
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    a:hover {
+      text-decoration: underline;
+    }
+  }
+}

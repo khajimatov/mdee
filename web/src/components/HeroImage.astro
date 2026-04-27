@@ -1,0 +1,19 @@
+---
+import { Picture } from 'astro:assets';
+import mdeePng from '../assets/mdee.png';
+---
+
+<section class="my-6">
+  <Picture
+    src={mdeePng}
+    formats={['avif', 'webp', 'png']}
+    widths={[640, 1280, 1920, 2560]}
+    sizes="(max-width: 640px) 100vw, (max-width: 1280px) 100vw, (max-width: 1920px) 100vw, 2560px"
+    alt="mdee running in the terminal with a markdown file open"
+    class="hero-shot block h-auto w-full rounded-[10px] [&_img]:rounded-[10px]"
+    loading="eager"
+    fetchpriority="high"
+    width={2560}
+    height={1440}
+  />
+</section>

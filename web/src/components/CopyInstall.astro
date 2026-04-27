@@ -1,0 +1,91 @@
+---
+const installCmd = 'curl -fsSL https://mdee.bkh.dev/install | bash';
+---
+
+<div class="rounded-[10px] bg-(--surface) px-[1.1rem] py-4">
+  <h2 class="mt-0 text-xs font-semibold uppercase tracking-[0.08em] text-(--surface-label)">
+    Install
+  </h2>
+  <div class="flex items-center gap-[0.65rem]">
+    <pre
+      id="install-cmd"
+      class="m-0 min-w-0 flex-1 whitespace-pre-wrap break-all font-mono text-[0.8125rem] leading-[1.45]"
+    >{installCmd}</pre>
+    <button
+      type="button"
+      id="copy-install-btn"
+      class="relative inline-flex shrink-0 cursor-pointer items-center justify-center rounded-lg border-[1.5px] border-(--border) bg-transparent px-[0.65rem] py-0 font-sans text-xs font-semibold uppercase tracking-[0.04em] leading-loose text-(--text) transition-[color,border-color,transform] duration-150 ease-[cubic-bezier(0.215,0.61,0.355,1)] after:absolute after:left-1/2 after:top-1/2 after:box-border after:h-11 after:min-h-full after:w-11 after:min-w-full after:-translate-x-1/2 after:-translate-y-1/2 after:content-[''] focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus) active:scale-[0.97] motion-reduce:transition-none motion-reduce:active:scale-100 hover:border-(--link) hover:text-(--link) [&.copied]:border-(--copied-border)"
+      aria-label="Copy install command"
+    >
+      Copy
+    </button>
+  </div>
+  <p id="copy-announce" class="sr-only" aria-live="polite" aria-atomic="true"></p>
+</div>
+
+<script>
+  (function () {
+    const pre = document.getElementById('install-cmd');
+    const copyAnnounce = document.getElementById('copy-announce');
+    const canonical = 'curl -fsSL https://mdee.bkh.dev/install | bash';
+    if (!pre) return;
+    if (location.protocol === 'https:') {
+      pre.textContent = 'curl -fsSL ' + location.origin + '/install | bash';
+    } else {
+      pre.textContent = canonical;
+    }
+
+    const btn = document.querySelector<HTMLButtonElement>('#copy-install-btn');
+    if (!btn) return;
+
+    const copyLabel = btn.textContent?.trim() || 'Copy';
+    const copyAriaDefault = btn.getAttribute('aria-label') || 'Copy install command';
+    let resetTimer: ReturnType<typeof setTimeout>;
+
+    function fallbackCopy(text: string) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+      } catch (e) {}
+      document.body.removeChild(ta);
+    }
+
+    function showCopied(button: HTMLButtonElement) {
+      button.textContent = 'Copied';
+      button.classList.add('copied');
+      button.setAttribute('aria-label', 'Copied to clipboard');
+      if (copyAnnounce) {
+        copyAnnounce.textContent = '';
+        requestAnimationFrame(function () {
+          copyAnnounce.textContent = 'Install command copied to clipboard.';
+        });
+      }
+      clearTimeout(resetTimer);
+      resetTimer = setTimeout(function () {
+        button.textContent = copyLabel;
+        button.classList.remove('copied');
+        button.setAttribute('aria-label', copyAriaDefault);
+        if (copyAnnounce) copyAnnounce.textContent = '';
+      }, 1500);
+    }
+
+    btn.addEventListener('click', function () {
+      const text = pre.textContent || '';
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => showCopied(btn)).catch(function () {
+          fallbackCopy(text);
+          showCopied(btn);
+        });
+      } else {
+        fallbackCopy(text);
+        showCopied(btn);
+      }
+    });
+  })();
+</script>

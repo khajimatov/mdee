@@ -1,0 +1,23 @@
+---
+import Layout from '../layouts/Layout.astro';
+import HeroImage from '../components/HeroImage.astro';
+import CopyInstall from '../components/CopyInstall.astro';
+
+const title = 'mdee — markdown in the terminal';
+const description =
+  'A small terminal UI for reading and editing Markdown files. Built with Bun and OpenTUI.';
+---
+
+<Layout title={title} description={description} canonical="https://mdee.bkh.dev">
+  <h1 class="mb-2 mt-0 text-[clamp(1.75rem,4vw,2.25rem)] font-semibold tracking-tight">mdee</h1>
+  <p class="m-0 text-[1.05rem] text-(--text-muted)">
+    Markdown in the terminal — view and edit .md files
+  </p>
+
+  <HeroImage />
+  <CopyInstall />
+
+  <div class="mt-4 flex flex-wrap gap-4">
+    <a href="https://github.com/khajimatov/mdee">GitHub</a>
+  </div>
+</Layout>
