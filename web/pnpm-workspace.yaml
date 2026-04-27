@@ -1,0 +1,13 @@
+allowBuilds:
+  ',': true
+  b: true
+  d: true
+  e: true
+  esbuild: true
+  i: true
+  l: true
+  m: true
+  s: true
+  sharp: true
+  u: true
+  w: true
