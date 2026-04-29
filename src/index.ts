@@ -17,6 +17,103 @@ import {
   type KeyEvent,
 } from "@opentui/core";
 import { basename, resolve } from "node:path";
+import { homedir } from "node:os";
+
+const APP = "mdee";
+const INSTALL_DIR = `${homedir()}/.${APP}/bin`;
+
+const SHELL_CONFIGS: Record<string, string[]> = {
+  zsh: [
+    `${homedir()}/.zshrc`,
+    `${homedir()}/.zshenv`,
+    `${process.env.XDG_CONFIG_HOME || `${homedir()}/.config`}/zsh/.zshrc`,
+    `${process.env.XDG_CONFIG_HOME || `${homedir()}/.config`}/zsh/.zshenv`,
+  ],
+  bash: [
+    `${homedir()}/.bashrc`,
+    `${homedir()}/.bash_profile`,
+    `${homedir()}/.profile`,
+    `${process.env.XDG_CONFIG_HOME || `${homedir()}/.config`}/bash/.bashrc`,
+    `${process.env.XDG_CONFIG_HOME || `${homedir()}/.config`}/bash/.bash_profile`,
+  ],
+  fish: [
+    `${homedir()}/.config/fish/config.fish`,
+  ],
+  ash: [
+    `${homedir()}/.ashrc`,
+    `${homedir()}/.profile`,
+    `/etc/profile`,
+  ],
+  sh: [
+    `${homedir()}/.ashrc`,
+    `${homedir()}/.profile`,
+    `/etc/profile`,
+  ],
+};
+
+async function uninstall(): Promise<void> {
+  const binaryPath = `${INSTALL_DIR}/${APP}`;
+  let removedSomething = false;
+
+  const rm = async (path: string): Promise<void> => {
+    try {
+      if (await Bun.file(path).exists()) {
+        Bun.spawnSync(["rm", path]);
+        console.log(`Removed ${path}`);
+        removedSomething = true;
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  const rmdir = async (path: string): Promise<void> => {
+    try {
+      const stat = Bun.spawnSync(["ls", "-A", path]);
+      if (stat.exitCode === 0 && stat.stdout.toString().trim() === "") {
+        Bun.spawnSync(["rmdir", path]);
+        console.log(`Removed directory ${path}`);
+        removedSomething = true;
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  await rm(binaryPath);
+  await rmdir(INSTALL_DIR);
+  await rmdir(`${homedir()}/.${APP}`);
+
+  const pathLinePattern = new RegExp(
+    `^\\s*#\\s*${APP}\\s*$\\n\\s*(?:export\\s+PATH=${INSTALL_DIR.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:\\$PATH|fish_add_path\\s+${INSTALL_DIR.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\s*$`,
+    "gm"
+  );
+
+  for (const files of Object.values(SHELL_CONFIGS)) {
+    for (const configFile of files) {
+      try {
+        if (!(await Bun.file(configFile).exists())) continue;
+        const content = await Bun.file(configFile).text();
+        const newContent = content.replace(pathLinePattern, "\n");
+        if (newContent !== content) {
+          await Bun.write(configFile, newContent);
+          console.log(`Removed PATH entry from ${configFile}`);
+          removedSomething = true;
+        }
+      } catch {
+        // ignore
+      }
+    }
+  }
+
+  if (!removedSomething) {
+    console.log(`${APP} is not installed, nothing to uninstall.`);
+  } else {
+    console.log(`${APP} uninstalled.`);
+  }
+
+  process.exit(0);
+}
 
 type Mode = "view" | "edit";
 
@@ -112,9 +209,16 @@ function markdownSyntaxStyle(): SyntaxStyle {
 }
 
 async function main(): Promise<void> {
-  const filename = Bun.argv[2];
+  const arg = Bun.argv[2];
+  if (arg === "--uninstall" || arg === "uninstall") {
+    await uninstall();
+    return;
+  }
+
+  const filename = arg;
   if (!filename) {
     console.error("Usage: mdee <file.md>");
+    console.error("       mdee --uninstall");
     process.exit(1);
   }
 
