@@ -66,4 +66,6 @@ Static landing page and installer sources live under `web/`.
 - [ ] Fix cursor moving content
 - [ ] Fix tree sitter wasm worker bun
 - [ ] Add usage instructions
-- [ ] Make lil announcement media content
+- [x] Make lil announcement media content
+- [ ] Add --version
+- [ ] Fix download progress animation for linux
