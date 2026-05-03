@@ -87,11 +87,16 @@ download_and_install() {
   print_message info "Downloading ${ORANGE}${APP} ${GREEN}version ${YELLOW}${specific_version}${GREEN} (${filename})..."
   tmp=$(mktemp -d)
   trap 'rm -rf "$tmp"' EXIT
-  (
-    cd "$tmp"
-    curl -# -fL "$url" | tar xz
-    mv "$APP" "$INSTALL_DIR/"
-  )
+  tarball="$tmp/$filename"
+  if ! curl -# -fL "$url" -o "$tarball"; then
+    print_message error "Download failed. Check your connection or the requested version."
+    exit 1
+  fi
+  if ! tar xzf "$tarball" -C "$tmp"; then
+    print_message error "Extraction failed. The download may be corrupt."
+    exit 1
+  fi
+  mv "$tmp/$APP" "$INSTALL_DIR/"
   print_message info "Installed ${ORANGE}${APP}${GREEN} to ${YELLOW}${INSTALL_DIR}/${APP}${NC}"
 }
 
