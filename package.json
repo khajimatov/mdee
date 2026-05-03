@@ -4,7 +4,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "compile": "bun run scripts/compile.ts",
+    "dev": "bun run src/index.ts",
+    "compile": "bun run scripts/compile.ts"
     "prepare-opentui": "bun install --os=\"*\" --cpu=\"*\" @opentui/core"
   },
   "bin": {
