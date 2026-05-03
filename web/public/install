@@ -153,18 +153,38 @@ if [[ ":$PATH:" != *":${INSTALL_DIR}:"* ]]; then
   case $current_shell in
   fish)
     add_to_path "$config_file" "fish_add_path $INSTALL_DIR"
+    fish -c "fish_add_path $INSTALL_DIR" 2>/dev/null || true
     ;;
   zsh | bash | ash | sh)
     add_to_path "$config_file" "export PATH=$INSTALL_DIR:\$PATH"
+    export PATH="$INSTALL_DIR:$PATH"
     ;;
   *)
     print_message warning "Add to PATH in ${config_file} (or similar):"
     print_message info "  export PATH=$INSTALL_DIR:\$PATH"
+    export PATH="$INSTALL_DIR:$PATH"
     ;;
   esac
 else
   print_message info "\$PATH already includes ${YELLOW}${INSTALL_DIR}${NC}"
 fi
+
+print_message info ""
+print_message info "${GREEN}Restart your terminal or run the following for this session:${NC}"
+case $current_shell in
+fish)
+  print_message info "  source $config_file"
+  ;;
+zsh)
+  print_message info "  source ${config_file:-~/.zshrc}"
+  ;;
+bash)
+  print_message info "  source ${config_file:-~/.bashrc}"
+  ;;
+*)
+  print_message info "  source ${config_file:-~/.bashrc}  (or equivalent for your shell)"
+  ;;
+esac
 
 if [ -n "${GITHUB_ACTIONS-}" ] && [ "${GITHUB_ACTIONS}" == "true" ]; then
   echo "$INSTALL_DIR" >>"$GITHUB_PATH"
