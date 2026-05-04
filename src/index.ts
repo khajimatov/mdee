@@ -121,6 +121,63 @@ function isModifierKey(key: KeyEvent): boolean {
   return key.ctrl || key.meta || key.shift || key.option || Boolean(key.super);
 }
 
+interface Palette {
+  text: string;
+  muted: string;
+  subtle: string;
+  accent: string;
+  blue: string;
+  green: string;
+  purple: string;
+  orange: string;
+  red: string;
+  error: string;
+  string: string;
+  url: string;
+  border: string;
+  conceal: string;
+  overlayBg: string;
+  overlayOpacity: number;
+}
+
+const DARK: Palette = {
+  text: "#e6edf3",
+  muted: "#8b949e",
+  subtle: "#6e7681",
+  accent: "#58a6ff",
+  blue: "#79c0ff",
+  green: "#7ee787",
+  purple: "#d2a8ff",
+  orange: "#ffa657",
+  red: "#ff7b72",
+  string: "#a5d6ff",
+  url: "#a371f7",
+  border: "#161b22",
+  conceal: "#484f58",
+  error: "#f85149",
+  overlayBg: "#000000",
+  overlayOpacity: 0.8,
+};
+
+const LIGHT: Palette = {
+  text: "#1f2328",
+  muted: "#656d76",
+  subtle: "#6e7781",
+  accent: "#0550ae",
+  blue: "#0a3069",
+  green: "#116329",
+  purple: "#6639ba",
+  orange: "#953800",
+  red: "#cf222e",
+  error: "#cf222e",
+  string: "#0a3069",
+  url: "#6639ba",
+  border: "#afb8c1",
+  conceal: "#afb8c1",
+  overlayBg: "#000000",
+  overlayOpacity: 0.3,
+};
+
 const h = (color: string, opts?: { bold?: boolean; italic?: boolean; underline?: boolean }) => ({
   fg: RGBA.fromHex(color),
   bold: opts?.bold,
@@ -128,83 +185,83 @@ const h = (color: string, opts?: { bold?: boolean; italic?: boolean; underline?:
   underline: opts?.underline,
 });
 
-function markdownSyntaxStyle(): SyntaxStyle {
+function markdownSyntaxStyle(p: Palette): SyntaxStyle {
   return SyntaxStyle.fromStyles({
-    default: h("#e6edf3"),
-    conceal: h("#484f58"),
+    default: h(p.text),
+    conceal: h(p.conceal),
 
-    "markup.heading.1": { ...h("#58a6ff"), bold: true },
-    "markup.heading.2": { ...h("#79c0ff"), bold: true },
-    "markup.heading.3": { ...h("#7ee787"), bold: true },
-    "markup.heading.4": { ...h("#d2a8ff"), bold: true },
-    "markup.heading.5": { ...h("#ffa657"), bold: true },
-    "markup.heading.6": { ...h("#ff7b72"), bold: true },
-    "markup.heading": { ...h("#58a6ff"), bold: true },
+    "markup.heading.1": { ...h(p.accent), bold: true },
+    "markup.heading.2": { ...h(p.blue), bold: true },
+    "markup.heading.3": { ...h(p.green), bold: true },
+    "markup.heading.4": { ...h(p.purple), bold: true },
+    "markup.heading.5": { ...h(p.orange), bold: true },
+    "markup.heading.6": { ...h(p.red), bold: true },
+    "markup.heading": { ...h(p.accent), bold: true },
 
-    "markup.list": h("#ff7b72"),
-    "markup.list.checked": h("#7ee787"),
-    "markup.list.unchecked": h("#8b949e"),
-    "markup.quote": h("#8b949e"),
-    "markup.raw": h("#79c0ff"),
-    "markup.raw.block": h("#a5d6ff"),
-    "markup.strong": { ...h("#e6edf3"), bold: true },
-    "markup.italic": { ...h("#e6edf3"), italic: true },
-    "markup.strikethrough": { ...h("#8b949e"), dim: true },
+    "markup.list": h(p.red),
+    "markup.list.checked": h(p.green),
+    "markup.list.unchecked": h(p.muted),
+    "markup.quote": h(p.muted),
+    "markup.raw": h(p.blue),
+    "markup.raw.block": h(p.string),
+    "markup.strong": { ...h(p.text), bold: true },
+    "markup.italic": { ...h(p.text), italic: true },
+    "markup.strikethrough": { ...h(p.muted), dim: true },
 
-    "markup.link": h("#58a6ff"),
-    "markup.link.label": h("#58a6ff"),
-    "markup.link.url": { ...h("#a371f7"), underline: true },
-    "markup.link.bracket.close": h("#58a6ff"),
+    "markup.link": h(p.accent),
+    "markup.link.label": h(p.accent),
+    "markup.link.url": { ...h(p.url), underline: true },
+    "markup.link.bracket.close": h(p.accent),
 
-    label: h("#ffa657"),
-    "punctuation.special": h("#8b949e"),
-    "punctuation.delimiter": h("#8b949e"),
-    "keyword.directive": h("#d2a8ff"),
-    "string.escape": h("#79c0ff"),
-    "character.special": h("#79c0ff"),
+    label: h(p.orange),
+    "punctuation.special": h(p.muted),
+    "punctuation.delimiter": h(p.muted),
+    "keyword.directive": h(p.purple),
+    "string.escape": h(p.blue),
+    "character.special": h(p.blue),
 
-    keyword: h("#ff7b72"),
-    "keyword.function": h("#d2a8ff"),
-    "keyword.return": h("#ff7b72"),
-    "keyword.import": h("#ff7b72"),
-    "keyword.type": h("#ff7b72"),
-    "keyword.modifier": h("#ff7b72"),
-    "keyword.repeat": h("#ff7b72"),
-    "keyword.conditional": h("#ff7b72"),
-    "keyword.conditional.ternary": h("#ff7b72"),
-    "keyword.exception": h("#ff7b72"),
-    "keyword.operator": h("#ff7b72"),
-    "keyword.coroutine": h("#ff7b72"),
-    string: h("#a5d6ff"),
-    "string.regexp": h("#a371f7"),
-    "string.special.url": { ...h("#a371f7"), underline: true },
-    comment: { ...h("#8b949e"), italic: true },
-    "comment.documentation": { ...h("#8b949e"), italic: true },
-    number: h("#79c0ff"),
-    boolean: h("#ff7b72"),
-    function: h("#d2a8ff"),
-    "function.call": h("#79c0ff"),
-    "function.method": h("#d2a8ff"),
-    "function.method.call": h("#79c0ff"),
-    "function.builtin": h("#d2a8ff"),
-    constructor: h("#ffa657"),
-    variable: h("#e6edf3"),
-    "variable.member": h("#79c0ff"),
-    "variable.builtin": h("#ffa657"),
-    "variable.parameter": h("#ffa657"),
-    type: h("#ffa657"),
-    "type.builtin": h("#ffa657"),
-    operator: h("#ff7b72"),
-    punctuation: h("#8b949e"),
-    "punctuation.bracket": h("#8b949e"),
-    property: h("#79c0ff"),
-    namespace: h("#ffa657"),
-    constant: h("#79c0ff"),
-    "constant.builtin": h("#79c0ff"),
-    module: h("#79c0ff"),
-    "module.builtin": h("#79c0ff"),
-    tag: h("#7ee787"),
-    attribute: h("#79c0ff"),
+    keyword: h(p.red),
+    "keyword.function": h(p.purple),
+    "keyword.return": h(p.red),
+    "keyword.import": h(p.red),
+    "keyword.type": h(p.red),
+    "keyword.modifier": h(p.red),
+    "keyword.repeat": h(p.red),
+    "keyword.conditional": h(p.red),
+    "keyword.conditional.ternary": h(p.red),
+    "keyword.exception": h(p.red),
+    "keyword.operator": h(p.red),
+    "keyword.coroutine": h(p.red),
+    string: h(p.string),
+    "string.regexp": h(p.url),
+    "string.special.url": { ...h(p.url), underline: true },
+    comment: { ...h(p.muted), italic: true },
+    "comment.documentation": { ...h(p.muted), italic: true },
+    number: h(p.blue),
+    boolean: h(p.red),
+    function: h(p.purple),
+    "function.call": h(p.blue),
+    "function.method": h(p.purple),
+    "function.method.call": h(p.blue),
+    "function.builtin": h(p.purple),
+    constructor: h(p.orange),
+    variable: h(p.text),
+    "variable.member": h(p.blue),
+    "variable.builtin": h(p.orange),
+    "variable.parameter": h(p.orange),
+    type: h(p.orange),
+    "type.builtin": h(p.orange),
+    operator: h(p.red),
+    punctuation: h(p.muted),
+    "punctuation.bracket": h(p.muted),
+    property: h(p.blue),
+    namespace: h(p.orange),
+    constant: h(p.blue),
+    "constant.builtin": h(p.blue),
+    module: h(p.blue),
+    "module.builtin": h(p.blue),
+    tag: h(p.green),
+    attribute: h(p.blue),
   });
 }
 
@@ -231,13 +288,45 @@ async function main(): Promise<void> {
 
   let documentText = await file.text();
   let lastSavedText = documentText;
-  const syntaxStyle = markdownSyntaxStyle();
+  let palette: Palette = DARK;
   const displayName = basename(absolutePath);
 
   const renderer = await createCliRenderer({
     useMouse: true,
     exitOnCtrlC: true,
   });
+
+  if (renderer.themeMode === "light") palette = LIGHT;
+
+  function applyPalette(p: Palette): void {
+    palette = p;
+    const style = markdownSyntaxStyle(p);
+    markdown.syntaxStyle = style;
+    markdown.fg = p.text;
+    markdown.tableOptions!.borderColor = p.border;
+    editor.syntaxStyle = style;
+    editor.textColor = p.text;
+    editor.focusedTextColor = p.text;
+    editor.cursorColor = p.accent;
+    statusBar.borderColor = p.border;
+    statusFilename.fg = p.muted;
+    statusMode.fg = p.muted;
+    statusCursor.fg = p.blue;
+    quitOverlay.backgroundColor = p.overlayBg;
+    quitOverlay.opacity = p.overlayOpacity;
+    quitDialog.borderColor = p.border;
+    quitDialog.backgroundColor = p.overlayBg;
+    quitTitle.fg = p.text;
+    quitBody.fg = p.muted;
+    quitErrorText.fg = p.error;
+    quitHints.fg = p.subtle;
+    const hintMuted = fg(p.subtle);
+    const hintKey = (label: string) => fg(p.text)(bold(label));
+    quitHints.content = t`${hintKey("Y")}${hintMuted(" save and quit · ")}${hintKey("N")}${hintMuted(" discard · ")}${hintKey("Esc")}${hintMuted(" cancel")}`;
+    refreshStatusBar();
+  }
+
+  const syntaxStyle = markdownSyntaxStyle(palette);
 
   const treeSitterClient = getTreeSitterClient();
   await treeSitterClient.initialize();
@@ -278,7 +367,7 @@ async function main(): Promise<void> {
     content: documentText,
     syntaxStyle,
     treeSitterClient,
-    fg: "#e6edf3",
+    fg: palette.text,
     conceal: true,
     concealCode: false,
     width: "100%",
@@ -290,7 +379,7 @@ async function main(): Promise<void> {
       borders: true,
       outerBorder: true,
       borderStyle: "rounded",
-      borderColor: "#30363d",
+      borderColor: palette.border,
       selectable: true,
     },
   });
@@ -308,7 +397,7 @@ async function main(): Promise<void> {
     flexDirection: "column",
     border: ["top"],
     borderStyle: "single",
-    borderColor: "#30363d",
+    borderColor: palette.border,
     paddingLeft: 1,
     paddingRight: 1,
     paddingTop: 0,
@@ -365,7 +454,7 @@ async function main(): Promise<void> {
   const statusFilename = new TextRenderable(renderer, {
     id: "mdee-status-file",
     content: displayName,
-    fg: "#8b949e",
+    fg: palette.muted,
     wrapMode: "none",
     truncate: true,
     width: "100%",
@@ -378,7 +467,7 @@ async function main(): Promise<void> {
   const statusMode = new TextRenderable(renderer, {
     id: "mdee-status-mode",
     content: "VIEW",
-    fg: "#8b949e",
+    fg: palette.muted,
     wrapMode: "none",
     truncate: false,
     flexGrow: 0,
@@ -389,7 +478,7 @@ async function main(): Promise<void> {
   const statusCursor = new TextRenderable(renderer, {
     id: "mdee-status-cursor",
     content: "",
-    fg: "#79c0ff",
+    fg: palette.blue,
     wrapMode: "none",
     truncate: false,
     flexGrow: 0,
@@ -421,10 +510,10 @@ async function main(): Promise<void> {
       saveFlashTimer = undefined;
       if (mode === "edit") {
         statusCursor.content = lastEditCursorStatus;
-        statusCursor.fg = "#79c0ff";
+        statusCursor.fg = palette.blue;
       } else {
         statusCursor.content = "";
-        statusCursor.fg = "#79c0ff";
+        statusCursor.fg = palette.blue;
       }
     }, durationMs);
   }
@@ -445,14 +534,14 @@ async function main(): Promise<void> {
   function refreshStatusBar(): void {
     clearSaveFlashTimer();
     statusMode.content = mode === "view" ? "VIEW" : "EDIT";
-    statusMode.fg = mode === "edit" ? "#58a6ff" : "#8b949e";
+    statusMode.fg = mode === "edit" ? palette.accent : palette.muted;
     applyStatusFilename();
     if (mode !== "edit") {
       statusCursor.content = "";
-      statusCursor.fg = "#79c0ff";
+      statusCursor.fg = palette.blue;
     } else {
       statusCursor.content = lastEditCursorStatus;
-      statusCursor.fg = "#79c0ff";
+      statusCursor.fg = palette.blue;
     }
   }
 
@@ -465,9 +554,9 @@ async function main(): Promise<void> {
     flexGrow: 1,
     minHeight: 0,
     visible: false,
-    textColor: "#e6edf3",
-    focusedTextColor: "#e6edf3",
-    cursorColor: "#58a6ff",
+    textColor: palette.text,
+    focusedTextColor: palette.text,
+    cursorColor: palette.accent,
     cursorStyle: { style: "line", blinking: true },
     onCursorChange: applyStatusCursorFromOnCursorChange,
   });
@@ -487,8 +576,8 @@ async function main(): Promise<void> {
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#000000",
-    opacity: 0.8,
+    backgroundColor: palette.overlayBg,
+    opacity: palette.overlayOpacity,
   });
 
   const quitDialog = new BoxRenderable(renderer, {
@@ -501,15 +590,15 @@ async function main(): Promise<void> {
     paddingBottom: 1,
     border: true,
     borderStyle: "rounded",
-    borderColor: "#30363d",
-    backgroundColor: "#000000",
+    borderColor: palette.border,
+    backgroundColor: palette.overlayBg,
     maxWidth: "90%",
   });
 
   const quitTitle = new TextRenderable(renderer, {
     id: "mdee-quit-title",
     content: "Save changes?",
-    fg: "#e6edf3",
+    fg: palette.text,
     wrapMode: "none",
     truncate: false,
   });
@@ -517,7 +606,7 @@ async function main(): Promise<void> {
   const quitBody = new TextRenderable(renderer, {
     id: "mdee-quit-body",
     content: "",
-    fg: "#8b949e",
+    fg: palette.muted,
     wrapMode: "word",
     width: "100%",
   });
@@ -525,19 +614,19 @@ async function main(): Promise<void> {
   const quitErrorText = new TextRenderable(renderer, {
     id: "mdee-quit-error",
     content: "",
-    fg: "#f85149",
+    fg: palette.error,
     wrapMode: "word",
     width: "100%",
     visible: false,
   });
 
-  const quitHintMuted = fg("#6e7681");
-  const quitHintKey = (label: string) => fg("#e6edf3")(bold(label));
+  const quitHintMuted = fg(palette.subtle);
+  const quitHintKey = (label: string) => fg(palette.text)(bold(label));
 
   const quitHints = new TextRenderable(renderer, {
     id: "mdee-quit-hints",
     content: t`${quitHintKey("Y")}${quitHintMuted(" save and quit · ")}${quitHintKey("N")}${quitHintMuted(" discard · ")}${quitHintKey("Esc")}${quitHintMuted(" cancel")}`,
-    fg: "#6e7681",
+    fg: palette.subtle,
     wrapMode: "none",
     truncate: true,
     width: "100%",
@@ -555,6 +644,12 @@ async function main(): Promise<void> {
   renderer.root.add(body);
   renderer.root.add(statusBar);
   renderer.root.add(quitOverlay);
+
+  renderer.on("theme_mode", (mode) => {
+    applyPalette(mode === "light" ? LIGHT : DARK);
+  });
+
+  if (renderer.themeMode === "light") applyPalette(LIGHT);
 
   function getPendingDocument(): string {
     return mode === "edit" ? editor.plainText : documentText;
@@ -595,17 +690,17 @@ async function main(): Promise<void> {
   async function savePending(): Promise<void> {
     const text = getPendingDocument();
     if (text === lastSavedText) {
-      flashStatusMessage("No changes", "#8b949e");
+      flashStatusMessage("No changes", palette.muted);
       return;
     }
     try {
       await Bun.write(absolutePath, text);
       syncStateAfterSave(text);
-      flashStatusMessage("Saved", "#7ee787");
+      flashStatusMessage("Saved", palette.green);
       applyStatusFilename();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
-      flashStatusMessage(`Save failed: ${message}`, "#f85149", 4000);
+      flashStatusMessage(`Save failed: ${message}`, palette.error, 4000);
     }
   }
 
@@ -688,7 +783,7 @@ async function main(): Promise<void> {
       return;
     }
 
-    if (key.ctrl && key.name === "c") {
+    if (key.ctrl && key.name === "c" && mode !== "edit") {
       key.stopPropagation();
       requestQuit();
       return;

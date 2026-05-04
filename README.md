@@ -69,3 +69,4 @@ Static landing page and installer sources live under `web/`.
 - [x] Make lil announcement media content
 - [ ] Add --version
 - [ ] Fix download progress animation for linux
+- [ ] mermaid support?
