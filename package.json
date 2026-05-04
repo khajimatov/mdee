@@ -19,5 +19,6 @@
   },
   "dependencies": {
     "@opentui/core": "0.1.99"
-  }
+  },
+  "version": "0.0.1"
 }
