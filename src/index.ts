@@ -13,8 +13,10 @@ import {
   t,
   TextareaRenderable,
   TextRenderable,
+  CliRenderEvents,
   type CursorChangeEvent,
   type KeyEvent,
+  type ThemeMode,
 } from "@opentui/core";
 import { basename, resolve } from "node:path";
 import { homedir } from "node:os";
@@ -151,6 +153,31 @@ const DARK: Palette = {
   overlayBg: "#000000",
   overlayOpacity: 0.8,
 };
+
+const LIGHT: Palette = {
+  background: "#ffffff",
+  surface: "#f6f8fa",
+  text: "#1f2328",
+  muted: "#636c76",
+  subtle: "#8b949e",
+  accent: "#0969da",
+  blue: "#0550ae",
+  green: "#1a7f37",
+  purple: "#8250df",
+  orange: "#bc4c00",
+  red: "#cf222e",
+  string: "#0a3069",
+  url: "#8250df",
+  border: "#d0d7de",
+  conceal: "#8b949e",
+  error: "#cf222e",
+  overlayBg: "#6e7781",
+  overlayOpacity: 0.5,
+};
+
+function paletteForTheme(theme: ThemeMode): Palette {
+  return theme === "dark" ? DARK : LIGHT;
+}
 
 const h = (
   color: string,
@@ -308,7 +335,6 @@ async function main(): Promise<void> {
   const file = Bun.file(absolutePath);
   let documentText = (await file.exists()) ? await file.text() : "";
   let lastSavedText = documentText;
-  const palette: Palette = DARK;
   const displayName = basename(absolutePath);
 
   const renderer = await createCliRenderer({
@@ -316,8 +342,11 @@ async function main(): Promise<void> {
     exitOnCtrlC: true,
   });
 
-  const syntaxStyle = markdownSyntaxStyle(palette);
-  const editorSyntaxStyle = editorMarkdownSyntaxStyle(palette);
+  // @ts-expect-error waitForThemeMode exists on CliRenderer (renderer.d.ts) but TS resolution may lag
+  const detectedTheme: ThemeMode | null = await renderer.waitForThemeMode(1000);
+  let palette: Palette = paletteForTheme(detectedTheme ?? "dark");
+  let syntaxStyle = markdownSyntaxStyle(palette);
+  let editorSyntaxStyle = editorMarkdownSyntaxStyle(palette);
 
   const treeSitterClient = getTreeSitterClient();
   await treeSitterClient.initialize();
@@ -643,12 +672,15 @@ async function main(): Promise<void> {
     visible: false,
   });
 
-  const quitHintMuted = fg(palette.subtle);
-  const quitHintKey = (label: string) => fg(palette.text)(bold(label));
+  function buildQuitHintsContent(p: Palette) {
+    const m = fg(p.subtle);
+    const k = (label: string) => fg(p.text)(bold(label));
+    return t`${k("Y")}${m(" save and quit · ")}${k("N")}${m(" discard · ")}${k("Esc")}${m(" cancel")}`;
+  }
 
   const quitHints = new TextRenderable(renderer, {
     id: "mdee-quit-hints",
-    content: t`${quitHintKey("Y")}${quitHintMuted(" save and quit · ")}${quitHintKey("N")}${quitHintMuted(" discard · ")}${quitHintKey("Esc")}${quitHintMuted(" cancel")}`,
+    content: buildQuitHintsContent(palette),
     fg: palette.subtle,
     wrapMode: "none",
     truncate: true,
@@ -767,6 +799,46 @@ async function main(): Promise<void> {
     refreshStatusBar();
     scroll.focus();
   }
+
+  function applyTheme(newPalette: Palette): void {
+    palette = newPalette;
+    syntaxStyle = markdownSyntaxStyle(palette);
+    editorSyntaxStyle = editorMarkdownSyntaxStyle(palette);
+
+    body.backgroundColor = palette.background;
+    statusBar.borderColor = palette.border;
+    statusBar.backgroundColor = palette.background;
+
+    markdown.syntaxStyle = syntaxStyle;
+    markdown.fg = palette.text;
+    markdown.tableOptions = {
+      ...markdown.tableOptions,
+      borderColor: palette.border,
+    };
+
+    editor.syntaxStyle = editorSyntaxStyle;
+    editor.textColor = palette.text;
+    editor.focusedTextColor = palette.text;
+    editor.cursorColor = palette.accent;
+
+    statusFilename.fg = palette.muted;
+    statusMode.fg = mode === "edit" ? palette.accent : palette.muted;
+    statusCursor.fg = palette.blue;
+
+    quitBackdrop.backgroundColor = palette.overlayBg;
+    quitBackdrop.opacity = palette.overlayOpacity;
+    quitDialog.borderColor = palette.border;
+    quitDialog.backgroundColor = palette.surface;
+    quitTitle.fg = palette.text;
+    quitBody.fg = palette.muted;
+    quitErrorText.fg = palette.error;
+    quitHints.fg = palette.subtle;
+    quitHints.content = buildQuitHintsContent(palette);
+  }
+
+  renderer.on(CliRenderEvents.THEME_MODE, (newTheme: ThemeMode) => {
+    applyTheme(paletteForTheme(newTheme));
+  });
 
   refreshStatusBar();
   scroll.focus();
