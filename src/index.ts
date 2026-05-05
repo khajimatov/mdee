@@ -543,6 +543,19 @@ async function main(): Promise<void> {
     }
   }
 
+  const editorWrap = new BoxRenderable(renderer, {
+    id: "mdee-editor-wrap",
+    width: "100%",
+    flexGrow: 1,
+    flexShrink: 1,
+    minHeight: 0,
+    visible: false,
+    paddingLeft: 1,
+    paddingRight: 1,
+    paddingTop: 1,
+    paddingBottom: 0,
+  });
+
   const editor = new TextareaRenderable(renderer, {
     id: "mdee-editor",
     initialValue: documentText,
@@ -551,13 +564,14 @@ async function main(): Promise<void> {
     width: "100%",
     flexGrow: 1,
     minHeight: 0,
-    visible: false,
     textColor: palette.text,
     focusedTextColor: palette.text,
     cursorColor: palette.accent,
     cursorStyle: { style: "line", blinking: true },
     onCursorChange: applyStatusCursorFromOnCursorChange,
   });
+
+  editorWrap.add(editor);
   editor.onContentChange = () => {
     applyStatusFilename();
   };
@@ -650,7 +664,7 @@ async function main(): Promise<void> {
 
   scroll.add(markdown);
   body.add(scroll);
-  body.add(editor);
+  body.add(editorWrap);
   renderer.root.add(body);
   renderer.root.add(statusBar);
   renderer.root.add(quitOverlay);
@@ -737,7 +751,7 @@ async function main(): Promise<void> {
     editor.setText(documentText);
     markdown.visible = false;
     scroll.visible = false;
-    editor.visible = true;
+    editorWrap.visible = true;
     mode = "edit";
     refreshStatusBar();
     editor.focus();
@@ -746,7 +760,7 @@ async function main(): Promise<void> {
   function exitEditMode(): void {
     documentText = editor.plainText;
     markdown.content = documentText;
-    editor.visible = false;
+    editorWrap.visible = false;
     scroll.visible = true;
     markdown.visible = true;
     mode = "view";
