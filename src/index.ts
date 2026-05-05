@@ -20,6 +20,7 @@ import {
 } from "@opentui/core";
 import { basename, resolve } from "node:path";
 import { homedir } from "node:os";
+import pkg from "../package.json" with { type: "json" };
 
 const APP = "mdee";
 const INSTALL_DIR = `${homedir()}/.${APP}/bin`;
@@ -319,6 +320,22 @@ function editorMarkdownSyntaxStyle(p: Palette): SyntaxStyle {
 
 async function main(): Promise<void> {
   const arg = Bun.argv[2];
+  if (arg === "--version" || arg === "-v" || arg === "version") {
+    console.log(pkg.version);
+    return;
+  }
+
+  if (arg === "--help" || arg === "-h" || arg === "help") {
+    console.log("Usage: mdee <file.md>");
+    console.log("       mdee [command|flag]");
+    console.log("");
+    console.log("Commands:");
+    console.log("  help, -h, --help     Show this help message");
+    console.log("  version, -v, --version  Show version");
+    console.log("  uninstall, --uninstall   Uninstall mdee");
+    return;
+  }
+
   if (arg === "--uninstall" || arg === "uninstall") {
     await uninstall();
     return;
@@ -327,7 +344,7 @@ async function main(): Promise<void> {
   const filename = arg;
   if (!filename) {
     console.error("Usage: mdee <file.md>");
-    console.error("       mdee --uninstall");
+    console.error("       mdee --help");
     process.exit(1);
   }
 
