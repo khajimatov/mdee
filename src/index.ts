@@ -36,19 +36,9 @@ const SHELL_CONFIGS: Record<string, string[]> = {
     `${process.env.XDG_CONFIG_HOME || `${homedir()}/.config`}/bash/.bashrc`,
     `${process.env.XDG_CONFIG_HOME || `${homedir()}/.config`}/bash/.bash_profile`,
   ],
-  fish: [
-    `${homedir()}/.config/fish/config.fish`,
-  ],
-  ash: [
-    `${homedir()}/.ashrc`,
-    `${homedir()}/.profile`,
-    `/etc/profile`,
-  ],
-  sh: [
-    `${homedir()}/.ashrc`,
-    `${homedir()}/.profile`,
-    `/etc/profile`,
-  ],
+  fish: [`${homedir()}/.config/fish/config.fish`],
+  ash: [`${homedir()}/.ashrc`, `${homedir()}/.profile`, `/etc/profile`],
+  sh: [`${homedir()}/.ashrc`, `${homedir()}/.profile`, `/etc/profile`],
 };
 
 async function uninstall(): Promise<void> {
@@ -85,8 +75,8 @@ async function uninstall(): Promise<void> {
   await rmdir(`${homedir()}/.${APP}`);
 
   const pathLinePattern = new RegExp(
-    `^\\s*#\\s*${APP}\\s*$\\n\\s*(?:export\\s+PATH=${INSTALL_DIR.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:\\$PATH|fish_add_path\\s+${INSTALL_DIR.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\s*$`,
-    "gm"
+    `^\\s*#\\s*${APP}\\s*$\\n\\s*(?:export\\s+PATH=${INSTALL_DIR.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}:\\$PATH|fish_add_path\\s+${INSTALL_DIR.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})\\s*$`,
+    "gm",
   );
 
   for (const files of Object.values(SHELL_CONFIGS)) {
@@ -116,12 +106,13 @@ async function uninstall(): Promise<void> {
 }
 
 type Mode = "view" | "edit";
-
 function isModifierKey(key: KeyEvent): boolean {
   return key.ctrl || key.meta || key.shift || key.option || Boolean(key.super);
 }
 
 interface Palette {
+  background: string;
+  surface: string;
   text: string;
   muted: string;
   subtle: string;
@@ -141,9 +132,11 @@ interface Palette {
 }
 
 const DARK: Palette = {
+  background: "#0d1117",
+  surface: "#161b22",
   text: "#e6edf3",
-  muted: "#8b949e",
-  subtle: "#6e7681",
+  muted: "#b1bac4",
+  subtle: "#8b949e",
   accent: "#58a6ff",
   blue: "#79c0ff",
   green: "#7ee787",
@@ -152,41 +145,31 @@ const DARK: Palette = {
   red: "#ff7b72",
   string: "#a5d6ff",
   url: "#a371f7",
-  border: "#161b22",
-  conceal: "#484f58",
+  border: "#30363d",
+  conceal: "#8b949e",
   error: "#f85149",
   overlayBg: "#000000",
   overlayOpacity: 0.8,
 };
 
-const LIGHT: Palette = {
-  text: "#1f2328",
-  muted: "#656d76",
-  subtle: "#6e7781",
-  accent: "#0550ae",
-  blue: "#0a3069",
-  green: "#116329",
-  purple: "#6639ba",
-  orange: "#953800",
-  red: "#cf222e",
-  error: "#cf222e",
-  string: "#0a3069",
-  url: "#6639ba",
-  border: "#afb8c1",
-  conceal: "#afb8c1",
-  overlayBg: "#000000",
-  overlayOpacity: 0.3,
-};
-
-const h = (color: string, opts?: { bold?: boolean; italic?: boolean; underline?: boolean }) => ({
+const h = (
+  color: string,
+  opts?: {
+    bold?: boolean;
+    italic?: boolean;
+    underline?: boolean;
+    dim?: boolean;
+  },
+) => ({
   fg: RGBA.fromHex(color),
   bold: opts?.bold,
   italic: opts?.italic,
   underline: opts?.underline,
+  dim: opts?.dim,
 });
 
-function markdownSyntaxStyle(p: Palette): SyntaxStyle {
-  return SyntaxStyle.fromStyles({
+function markdownSyntaxRules(p: Palette) {
+  return {
     default: h(p.text),
     conceal: h(p.conceal),
 
@@ -262,6 +245,48 @@ function markdownSyntaxStyle(p: Palette): SyntaxStyle {
     "module.builtin": h(p.blue),
     tag: h(p.green),
     attribute: h(p.blue),
+  };
+}
+
+function markdownSyntaxStyle(p: Palette): SyntaxStyle {
+  return SyntaxStyle.fromStyles(markdownSyntaxRules(p));
+}
+
+function editorMarkdownSyntaxStyle(p: Palette): SyntaxStyle {
+  return SyntaxStyle.fromStyles({
+    ...markdownSyntaxRules(p),
+
+    "markup.heading.1": h(p.accent, { bold: true }),
+    "markup.heading.2": h(p.blue, { bold: true }),
+    "markup.heading.3": h(p.green, { bold: true }),
+    "markup.heading.4": h(p.purple, { bold: true }),
+    "markup.heading.5": h(p.orange, { bold: true }),
+    "markup.heading.6": h(p.red, { bold: true }),
+    "markup.heading": h(p.accent, { bold: true }),
+    "markup.heading.marker": h(p.subtle, { bold: true }),
+
+    "markup.list": h(p.orange, { bold: true }),
+    "markup.list.marker": h(p.orange, { bold: true }),
+    "markup.list.checked": h(p.green, { bold: true }),
+    "markup.list.unchecked": h(p.muted),
+    "markup.quote": h(p.muted, { italic: true }),
+    "markup.raw": h(p.string),
+    "markup.raw.block": h(p.string),
+    "markup.strong": h(p.text, { bold: true }),
+    "markup.italic": h(p.text, { italic: true }),
+    "markup.strikethrough": h(p.muted, { dim: true }),
+
+    "markup.link": h(p.accent),
+    "markup.link.label": h(p.accent, { underline: true }),
+    "markup.link.url": h(p.url, { underline: true }),
+    "markup.link.bracket.open": h(p.subtle, { dim: true }),
+    "markup.link.bracket.close": h(p.subtle, { dim: true }),
+
+    label: h(p.orange, { bold: true }),
+    "keyword.directive": h(p.purple, { bold: true }),
+    "punctuation.special": h(p.subtle, { dim: true }),
+    "punctuation.delimiter": h(p.subtle, { dim: true }),
+    "punctuation.bracket": h(p.subtle, { dim: true }),
   });
 }
 
@@ -281,14 +306,9 @@ async function main(): Promise<void> {
 
   const absolutePath = resolve(filename);
   const file = Bun.file(absolutePath);
-  if (!(await file.exists())) {
-    console.error(`File not found: ${absolutePath}`);
-    process.exit(1);
-  }
-
-  let documentText = await file.text();
+  let documentText = (await file.exists()) ? await file.text() : "";
   let lastSavedText = documentText;
-  let palette: Palette = DARK;
+  const palette: Palette = DARK;
   const displayName = basename(absolutePath);
 
   const renderer = await createCliRenderer({
@@ -296,37 +316,8 @@ async function main(): Promise<void> {
     exitOnCtrlC: true,
   });
 
-  if (renderer.themeMode === "light") palette = LIGHT;
-
-  function applyPalette(p: Palette): void {
-    palette = p;
-    const style = markdownSyntaxStyle(p);
-    markdown.syntaxStyle = style;
-    markdown.fg = p.text;
-    markdown.tableOptions!.borderColor = p.border;
-    editor.syntaxStyle = style;
-    editor.textColor = p.text;
-    editor.focusedTextColor = p.text;
-    editor.cursorColor = p.accent;
-    statusBar.borderColor = p.border;
-    statusFilename.fg = p.muted;
-    statusMode.fg = p.muted;
-    statusCursor.fg = p.blue;
-    quitOverlay.backgroundColor = p.overlayBg;
-    quitOverlay.opacity = p.overlayOpacity;
-    quitDialog.borderColor = p.border;
-    quitDialog.backgroundColor = p.overlayBg;
-    quitTitle.fg = p.text;
-    quitBody.fg = p.muted;
-    quitErrorText.fg = p.error;
-    quitHints.fg = p.subtle;
-    const hintMuted = fg(p.subtle);
-    const hintKey = (label: string) => fg(p.text)(bold(label));
-    quitHints.content = t`${hintKey("Y")}${hintMuted(" save and quit · ")}${hintKey("N")}${hintMuted(" discard · ")}${hintKey("Esc")}${hintMuted(" cancel")}`;
-    refreshStatusBar();
-  }
-
   const syntaxStyle = markdownSyntaxStyle(palette);
+  const editorSyntaxStyle = editorMarkdownSyntaxStyle(palette);
 
   const treeSitterClient = getTreeSitterClient();
   await treeSitterClient.initialize();
@@ -341,6 +332,7 @@ async function main(): Promise<void> {
     flexShrink: 1,
     minHeight: 0,
     flexDirection: "column",
+    backgroundColor: palette.background,
   });
 
   const scroll = new ScrollBoxRenderable(renderer, {
@@ -356,7 +348,7 @@ async function main(): Promise<void> {
       paddingLeft: 1,
       paddingRight: 1,
       paddingTop: 1,
-      paddingBottom: 1,
+      paddingBottom: 0,
     },
   });
   scroll.verticalScrollBar.visible = false;
@@ -398,6 +390,7 @@ async function main(): Promise<void> {
     border: ["top"],
     borderStyle: "single",
     borderColor: palette.border,
+    backgroundColor: palette.background,
     paddingLeft: 1,
     paddingRight: 1,
     paddingTop: 0,
@@ -502,9 +495,14 @@ async function main(): Promise<void> {
   }
 
   /** Brief message in the status bar’s right slot; restores line:column in edit or clears in view. */
-  function flashStatusMessage(message: string, color: string, durationMs = 1400): void {
+  function flashStatusMessage(
+    message: string,
+    color: string,
+    durationMs = 1400,
+  ): void {
     clearSaveFlashTimer();
-    statusCursor.content = message.length > 64 ? `${message.slice(0, 61)}...` : message;
+    statusCursor.content =
+      message.length > 64 ? `${message.slice(0, 61)}...` : message;
     statusCursor.fg = color;
     saveFlashTimer = setTimeout(() => {
       saveFlashTimer = undefined;
@@ -548,7 +546,7 @@ async function main(): Promise<void> {
   const editor = new TextareaRenderable(renderer, {
     id: "mdee-editor",
     initialValue: documentText,
-    syntaxStyle,
+    syntaxStyle: editorSyntaxStyle,
     wrapMode: "word",
     width: "100%",
     flexGrow: 1,
@@ -576,8 +574,18 @@ async function main(): Promise<void> {
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
+  });
+
+  const quitBackdrop = new BoxRenderable(renderer, {
+    id: "mdee-quit-backdrop",
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
     backgroundColor: palette.overlayBg,
     opacity: palette.overlayOpacity,
+    zIndex: 0,
   });
 
   const quitDialog = new BoxRenderable(renderer, {
@@ -591,8 +599,9 @@ async function main(): Promise<void> {
     border: true,
     borderStyle: "rounded",
     borderColor: palette.border,
-    backgroundColor: palette.overlayBg,
+    backgroundColor: palette.surface,
     maxWidth: "90%",
+    zIndex: 1,
   });
 
   const quitTitle = new TextRenderable(renderer, {
@@ -636,6 +645,7 @@ async function main(): Promise<void> {
   quitDialog.add(quitBody);
   quitDialog.add(quitErrorText);
   quitDialog.add(quitHints);
+  quitOverlay.add(quitBackdrop);
   quitOverlay.add(quitDialog);
 
   scroll.add(markdown);
@@ -644,12 +654,6 @@ async function main(): Promise<void> {
   renderer.root.add(body);
   renderer.root.add(statusBar);
   renderer.root.add(quitOverlay);
-
-  renderer.on("theme_mode", (mode) => {
-    applyPalette(mode === "light" ? LIGHT : DARK);
-  });
-
-  if (renderer.themeMode === "light") applyPalette(LIGHT);
 
   function getPendingDocument(): string {
     return mode === "edit" ? editor.plainText : documentText;

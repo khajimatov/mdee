@@ -31,7 +31,7 @@ bun run compile -- --skip-install   # after a normal bun install (e.g. in CI)
 
 Release tarballs (`mdee-{mac|linux}-{arch}.tar.gz`) contain the `mdee` binary from `dist/`; the GitHub Actions release workflow uses `bun run compile`.
 
-The file must already exist. The window title is set to the file’s basename.
+If the file does not exist, mdee starts with an empty document; saving creates it. The window title is set to the file’s basename.
 
 ## Keys
 

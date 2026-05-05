@@ -1,5 +1,3 @@
-
-
 # mdee sample document (test)
 
 This file is for **manual testing** of the markdown TUI: *view mode*, scrolling, `inline code`, and **edit mode** (`i` then `Esc`).
