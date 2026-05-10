@@ -6,6 +6,7 @@ import {
   createCliRenderer,
   fg,
   getTreeSitterClient,
+  LineNumberRenderable,
   MarkdownRenderable,
   RGBA,
   ScrollBoxRenderable,
@@ -556,7 +557,7 @@ async function main(): Promise<void> {
         statusCursor.content = lastEditCursorStatus;
         statusCursor.fg = palette.blue;
       } else {
-        statusCursor.content = "";
+        statusCursor.content = buildViewHintsContent(palette);
         statusCursor.fg = palette.blue;
       }
     }, durationMs);
@@ -565,7 +566,7 @@ async function main(): Promise<void> {
   /** Sole writer of the line:column status; driven only by `onCursorChange` (`line` / `visualColumn` are 0-based). */
   function applyStatusCursorFromOnCursorChange(event: CursorChangeEvent): void {
     if (mode !== "edit") {
-      statusCursor.content = "";
+      statusCursor.content = buildViewHintsContent(palette);
       lastEditCursorStatus = "";
       return;
     }
@@ -581,7 +582,7 @@ async function main(): Promise<void> {
     statusMode.fg = mode === "edit" ? palette.accent : palette.muted;
     applyStatusFilename();
     if (mode !== "edit") {
-      statusCursor.content = "";
+      statusCursor.content = buildViewHintsContent(palette);
       statusCursor.fg = palette.blue;
     } else {
       statusCursor.content = lastEditCursorStatus;
@@ -617,7 +618,18 @@ async function main(): Promise<void> {
     onCursorChange: applyStatusCursorFromOnCursorChange,
   });
 
-  editorWrap.add(editor);
+  const editorWithLineNumbers = new LineNumberRenderable(renderer, {
+    id: "mdee-editor-ln",
+    target: editor,
+    fg: palette.subtle,
+    bg: palette.background,
+    minWidth: 3,
+    width: "100%",
+    flexGrow: 1,
+    minHeight: 0,
+  });
+
+  editorWrap.add(editorWithLineNumbers);
   editor.onContentChange = () => {
     applyStatusFilename();
   };
@@ -690,6 +702,12 @@ async function main(): Promise<void> {
     const m = fg(p.subtle);
     const k = (label: string) => fg(p.text)(bold(label));
     return t`${k("Y")}${m(" save and quit · ")}${k("N")}${m(" discard · ")}${k("Esc")}${m(" cancel")}`;
+  }
+
+  function buildViewHintsContent(p: Palette) {
+    const m = fg(p.subtle);
+    const k = (label: string) => fg(p.text)(bold(label));
+    return t`${k("i")}${m(" edit · ")}${k("q")}${m(" quit")}`;
   }
 
   const quitHints = new TextRenderable(renderer, {
@@ -835,6 +853,9 @@ async function main(): Promise<void> {
     editor.focusedTextColor = palette.text;
     editor.cursorColor = palette.accent;
 
+    editorWithLineNumbers.fg = palette.subtle;
+    editorWithLineNumbers.bg = palette.background;
+
     statusFilename.fg = palette.muted;
     statusMode.fg = mode === "edit" ? palette.accent : palette.muted;
     statusCursor.fg = palette.blue;
@@ -848,6 +869,10 @@ async function main(): Promise<void> {
     quitErrorText.fg = palette.error;
     quitHints.fg = palette.subtle;
     quitHints.content = buildQuitHintsContent(palette);
+
+    if (mode === "view" && saveFlashTimer === undefined) {
+      statusCursor.content = buildViewHintsContent(palette);
+    }
   }
 
   renderer.on(CliRenderEvents.THEME_MODE, (newTheme: ThemeMode) => {
