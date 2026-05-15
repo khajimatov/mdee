@@ -742,7 +742,9 @@ async function main(): Promise<void> {
   }
 
   function applyStatusFilename(): void {
-    statusFilename.content = isDirty() ? `${displayName} *` : displayName;
+    const dirty = isDirty();
+    statusFilename.content = dirty ? `${displayName} *` : displayName;
+    renderer.setTerminalTitle(dirty ? `* ${displayName}` : displayName);
   }
 
   function showQuitDialog(): void {
