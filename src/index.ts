@@ -285,13 +285,6 @@ function editorMarkdownSyntaxStyle(p: Palette): SyntaxStyle {
   return SyntaxStyle.fromStyles({
     ...markdownSyntaxRules(p),
 
-    "markup.heading.1": h(p.accent, { bold: true }),
-    "markup.heading.2": h(p.blue, { bold: true }),
-    "markup.heading.3": h(p.green, { bold: true }),
-    "markup.heading.4": h(p.purple, { bold: true }),
-    "markup.heading.5": h(p.orange, { bold: true }),
-    "markup.heading.6": h(p.red, { bold: true }),
-    "markup.heading": h(p.accent, { bold: true }),
     "markup.heading.marker": h(p.subtle, { bold: true }),
 
     "markup.list": h(p.orange, { bold: true }),
@@ -351,7 +344,17 @@ async function main(): Promise<void> {
 
   const absolutePath = resolve(filename);
   const file = Bun.file(absolutePath);
-  let documentText = (await file.exists()) ? await file.text() : "";
+  const fileExists = await file.exists();
+  let documentText = "";
+  if (fileExists) {
+    try {
+      documentText = await file.text();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(`Failed to read ${absolutePath}: ${message}`);
+      process.exit(1);
+    }
+  }
   let lastSavedText = documentText;
   const displayName = basename(absolutePath);
 
@@ -360,7 +363,6 @@ async function main(): Promise<void> {
     exitOnCtrlC: true,
   });
 
-  // @ts-expect-error waitForThemeMode exists on CliRenderer (renderer.d.ts) but TS resolution may lag
   const detectedTheme: ThemeMode | null = await renderer.waitForThemeMode(1000);
   let palette: Palette = paletteForTheme(detectedTheme ?? "dark");
   let syntaxStyle = markdownSyntaxStyle(palette);
@@ -814,7 +816,9 @@ async function main(): Promise<void> {
   }
 
   function enterEditMode(): void {
-    editor.setText(documentText);
+    if (editor.plainText !== documentText) {
+      editor.setText(documentText);
+    }
     markdown.visible = false;
     scroll.visible = false;
     editorWrap.visible = true;
@@ -884,6 +888,10 @@ async function main(): Promise<void> {
   refreshStatusBar();
   scroll.focus();
 
+  if (!fileExists) {
+    flashStatusMessage("New file", palette.accent);
+  }
+
   renderer.keyInput.on("keypress", (key: KeyEvent) => {
     if (quitDialogOpen) {
       key.stopPropagation();
@@ -891,23 +899,11 @@ async function main(): Promise<void> {
         hideQuitDialog();
         return;
       }
-      if (
-        (key.name === "y" || key.name === "Y") &&
-        !key.ctrl &&
-        !key.meta &&
-        !key.option &&
-        !key.super
-      ) {
+      if (key.name === "y" && !isModifierKey(key)) {
         void savePendingAndQuit();
         return;
       }
-      if (
-        (key.name === "n" || key.name === "N") &&
-        !key.ctrl &&
-        !key.meta &&
-        !key.option &&
-        !key.super
-      ) {
+      if (key.name === "n" && !isModifierKey(key)) {
         discardAndQuit();
         return;
       }
